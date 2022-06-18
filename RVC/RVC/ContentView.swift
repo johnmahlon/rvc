@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import AVKit
 
 struct ContentView: View {
     @State private var seconds: String = ""
     @State private var isImporting: Bool = false
-    @State private var showImportError: Bool = false
+    @State private var isExporting: Bool = false
+    @State private var errorMessage: String = ""
     
     @State private var movie: URL? = nil
     
@@ -27,13 +29,62 @@ struct ContentView: View {
             ) { result in
                 switch result {
                 case .success(let url): movie = url
-                case .failure(_): showImportError = true
+                case .failure(_): errorMessage = "Error importing video"
                 }
             }
             
-            Text("Error importing video :(")
+            Text(errorMessage)
                 .foregroundColor(.red)
-                .opacity(showImportError ? 0 : 1)
+            
+            Button("Export video") {
+                exportMovie(movie: movie)
+            }
+        }
+    }
+    
+    private func exportMovie(movie: URL?) {
+        if let mov = movie {
+            let asset = AVAsset(url: mov)
+            let length = Float(asset.duration.value) / Float(asset.duration.timescale)
+            
+            let start = 1
+            let end = 3
+            
+            guard
+                let exportSession = AVAssetExportSession(
+                asset: asset,
+                presetName: AVAssetExportPresetHighestQuality)
+            else {
+                return
+            }
+            
+            exportSession.outputURL = try! FileManager.default.url(
+                for: .desktopDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: false
+            ).appendingPathComponent("trimmed_video.mp4")
+            
+            exportSession.outputFileType = .mp4
+            
+            let startTime = CMTime(seconds: Double(start ), preferredTimescale: 1000)
+            let endTime = CMTime(seconds: Double(end ), preferredTimescale: 1000)
+            let timeRange = CMTimeRange(start: startTime, end: endTime)
+            
+            exportSession.timeRange = timeRange
+            exportSession.exportAsynchronously{
+                switch exportSession.status {
+                case .completed:
+                    print("exported at Desktop")
+                case .failed:
+                    errorMessage = "failed to export"
+                    
+                case .cancelled:
+                    errorMessage = "cancelled export"
+                    
+                default: break
+                }
+            }
         }
     }
 }
