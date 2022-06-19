@@ -14,12 +14,5 @@ struct RVCApp: App {
             ContentView()
                 .frame(minWidth: 800, maxWidth: .infinity, minHeight: 500, maxHeight: .infinity)
         }
-        .commands {
-            CommandGroup(after: .newItem) {
-                Button("Import") {
-                    print("importing video...")
-                }.keyboardShortcut("i")
-            }
-        }
     }
 }
