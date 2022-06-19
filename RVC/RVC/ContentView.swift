@@ -12,21 +12,30 @@ struct ContentView: View {
     @State private var seconds: String = ""
     @State private var isImporting: Bool = false
     @State private var errorMessage: String = ""
+    @State private var name: String = ""
     
     @State private var movie: URL? = nil
     
     var body: some View {
         VStack {
             
-            Button("Import Video") {
-                isImporting.toggle()
-            }.fileImporter(
-                isPresented: $isImporting,
-                allowedContentTypes: [.movie]
-            ) { result in
-                switch result {
-                case .success(let url): movie = url
-                case .failure(_): errorMessage = "Error importing video"
+            Spacer()
+            
+            VStack {
+                Button("Import Video") {
+                    isImporting.toggle()
+                }.fileImporter(
+                    isPresented: $isImporting,
+                    allowedContentTypes: [.movie]
+                ) { result in
+                    switch result {
+                    case .success(let url): movie = url
+                    case .failure(_): errorMessage = "Error importing video"
+                    }
+                }
+                
+                if let mov = movie {
+                    Text(mov.absoluteString)
                 }
             }
             
@@ -37,17 +46,24 @@ struct ContentView: View {
             )
                 .frame(width: 125)
             
-            Text(errorMessage)
-                .foregroundColor(.red)
+            Spacer()
             
-            if let mov = movie {
-                Text(mov.absoluteString)
+            VStack {
+                Text("File Name (don't include extension):")
+                TextField("", text: $name)
+                    .frame(width: 125)
+                
+                
+                Button("Export video") {
+                    exportMovie(movie: movie)
+                }
+                
+                Text(errorMessage)
+                    .foregroundColor(.red)
             }
             
-            Button("Export video") {
-                exportMovie(movie: movie)
-            }
-        }
+            Spacer()
+        }.frame(width: 300, height: 300)
     }
     
     private func exportMovie(movie: URL?) {
@@ -82,7 +98,7 @@ struct ContentView: View {
                 in: .userDomainMask,
                 appropriateFor: nil,
                 create: false
-            ).appendingPathComponent("trimmed_video.mp4")
+            ).appendingPathComponent("\(name).mp4")
             
             exportSession.outputFileType = .mp4
             
