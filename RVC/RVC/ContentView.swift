@@ -18,9 +18,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Text("How many seconds?")
-            TextField("", text: $seconds)
-                .frame(width: 125)
+            
             Button("Import Video") {
                 isImporting.toggle()
             }.fileImporter(
@@ -33,8 +31,19 @@ struct ContentView: View {
                 }
             }
             
+            Text("How many seconds?")
+            TextField(
+                "",
+                text: $seconds
+            )
+                .frame(width: 125)
+            
             Text(errorMessage)
                 .foregroundColor(.red)
+            
+            if let mov = movie {
+                Text(mov.absoluteString)
+            }
             
             Button("Export video") {
                 exportMovie(movie: movie)
@@ -47,8 +56,20 @@ struct ContentView: View {
             let asset = AVAsset(url: mov)
             let length = Float(asset.duration.value) / Float(asset.duration.timescale)
             
-            let start = 1
-            let end = 3
+            guard let flSecs = Float(seconds) else {
+                errorMessage = "You have to put in a number..."
+                return
+            }
+            
+            guard flSecs < length else {
+                errorMessage = "Video isn't this long ???????"
+                return
+            }
+            
+            let maxStart = length - flSecs
+            
+            let start = Float.random(in: 0..<maxStart)
+            let end = start + flSecs
             
             guard
                 let exportSession = AVAssetExportSession(
