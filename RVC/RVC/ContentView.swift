@@ -11,7 +11,6 @@ import AVKit
 struct ContentView: View {
     @State private var seconds: String = ""
     @State private var isImporting: Bool = false
-    @State private var isExporting: Bool = false
     @State private var errorMessage: String = ""
     
     @State private var movie: URL? = nil
@@ -67,7 +66,6 @@ struct ContentView: View {
             }
             
             let maxStart = length - flSecs
-            
             let start = Float.random(in: 0..<maxStart)
             let end = start + flSecs
             
